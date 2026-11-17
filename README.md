@@ -4,8 +4,9 @@ Gioco di disegno guidato nel browser: traccia la linea tratteggiata, il tratto s
 alla precisione, poi premi **Valuta il disegno** per ottenere punteggio e stelle. Nove livelli,
 tre percorsi, progressi salvati in `localStorage`.
 
-C'è anche **Disegna in due** (`duo.html`): una stanza con codice, una sola tela condivisa con la
-traccia da seguire e i tratti sincronizzati in tempo reale tra i due browser, ognuno col suo colore.
+Alla radice `index.html` fa scegliere la modalità: **Da solo** (`solo.html`) o **Insieme ad un
+amico** (`duo.html`). In due si apre una stanza con codice, c'è una sola tela condivisa con la
+traccia da seguire e i tratti sono sincronizzati in tempo reale, ognuno col suo colore.
 
 Nessuna build: HTML, CSS e JavaScript. L'unica libreria è PeerJS, inclusa in `js/vendor/`.
 
@@ -45,7 +46,8 @@ Il sito è statico e viene servito direttamente dal branch `main` (root della re
 
 | File | Contenuto |
 | --- | --- |
-| `index.html` | Struttura della landing e del pannello di gioco |
+| `index.html` | Schermata «Come vuoi giocare?» con le due modalità |
+| `solo.html` | Landing e gioco guidato in solitaria |
 | `styles.css` | Stile, layout responsive |
 | `js/levels.js` | Forme dei nove livelli e percorsi |
 | `js/game.js` | Canvas, input, punteggio, stelle, progressi |

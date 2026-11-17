@@ -3,279 +3,95 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Matita — Disegna. Impara. Rilassati.</title>
-<meta name="description" content="Matita è il gioco di disegno guidato nel browser: traccia la linea tratteggiata, ricevi feedback immediato e conquista tre stelle per ogni disegno.">
+<title>Matita — Come vuoi giocare?</title>
+<meta name="description" content="Scegli come giocare a Matita: da solo con i livelli guidati, oppure insieme a un amico sulla stessa tela in tempo reale.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff5c33'/%3E%3Cpath d='M9 23l1.8-4.6 8.4-8.4 3 3-8.4 8.4L9 23z' fill='%23fffdf9'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body id="top">
+<body>
 
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="brand" href="#top">
+    <a class="brand" href="index.html">
       <span class="brand-mark" aria-hidden="true"></span>
       <span>Matita</span>
     </a>
     <nav class="main-nav" aria-label="Navigazione principale">
-      <a href="#come-funziona">Come funziona</a>
-      <a href="duo.html">Disegna in due</a>
-      <a href="#livelli">Percorsi</a>
-      <a href="#metodo">Il nostro metodo</a>
-      <a href="#faq">FAQ</a>
+      <a href="solo.html">Da solo</a>
+      <a href="duo.html">In due</a>
+      <a href="solo.html#metodo">Il nostro metodo</a>
+      <a href="solo.html#faq">FAQ</a>
     </nav>
     <div class="header-actions">
       <span class="lang">Italiano (IT)</span>
-      <a class="btn btn-primary btn-sm" href="#gioco">Gioca gratis</a>
+      <a class="btn btn-ghost btn-sm" href="duo.html">Disegna in due</a>
     </div>
   </div>
 </header>
 
 <main>
 
-  <section class="hero">
-    <div class="wrap hero-inner">
-      <div class="hero-copy">
-        <p class="eyebrow">Il gioco di disegno guidato nel browser</p>
-        <h1>Disegna.<br>Impara.<br>Rilassati.</h1>
-        <p class="lede">
-          Segui la traccia tratteggiata, ricevi feedback immediato e conquista tre stelle per ogni
-          disegno. Nove livelli, nessuna installazione, nessun account.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#gioco">Gioca gratis</a>
-          <a class="btn btn-ghost" href="#come-funziona">Come funziona</a>
-        </div>
-        <ul class="badges">
-          <li>Gira nel browser</li>
-          <li>Gratis</li>
-          <li>Progressi salvati in locale</li>
-        </ul>
-      </div>
-      <div class="hero-art" id="hero-art" aria-hidden="true"></div>
-    </div>
-  </section>
-
-  <section class="stats" aria-label="Numeri del gioco">
-    <div class="wrap stats-grid">
-      <div class="stat"><strong>9</strong><span>disegni guidati</span></div>
-      <div class="stat"><strong>3</strong><span>stelle per disegno</span></div>
-      <div class="stat"><strong>5 min</strong><span>a sessione</span></div>
-      <div class="stat"><strong>100%</strong><span>nel browser</span></div>
-    </div>
-  </section>
-
-  <section id="gioco" class="section game-section">
+  <section class="mode-hero">
     <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Il gioco</p>
-        <h2>Segui la traccia, conquista le stelle</h2>
-        <p class="section-lede">
-          Disegna sopra la linea tratteggiata con il mouse o con il dito. Il tratto diventa verde
-          dove sei preciso e ambra dove devi correggere. Quando hai finito, premi
-          <strong>Valuta il disegno</strong>.
-        </p>
-      </div>
+      <p class="eyebrow">Matita</p>
+      <h1>Come vuoi giocare?</h1>
+      <p class="lede">
+        Due modi per disegnare, gli stessi strumenti. Allenati con la traccia e le stelle, oppure
+        apri una stanza e disegna insieme a un amico sulla stessa tela, in tempo reale.
+      </p>
 
-      <div class="game-shell">
-        <aside class="game-side">
-          <div class="game-side-head">
-            <h3>Livelli</h3>
-            <p class="stars-total" id="stars-total">0 / 27 stelle</p>
+      <div class="mode-grid">
+
+        <a class="mode-card" href="solo.html">
+          <div class="mode-thumb mode-thumb-solo" aria-hidden="true">
+            <svg viewBox="0 0 200 150">
+              <path d="M100 130C55 96 40 72 40 54 40 38 52 28 66 28c12 0 26 8 34 20 8-12 22-20 34-20 14 0 26 10 26 26 0 18-15 42-60 76z"
+                    fill="none" stroke="rgba(23,19,15,0.26)" stroke-width="4" stroke-dasharray="10 8" stroke-linecap="round"/>
+              <path d="M70 44c10-8 22-6 30 4" fill="none" stroke="#ff5c33" stroke-width="7" stroke-linecap="round"/>
+            </svg>
           </div>
-          <ul class="level-list" id="level-list"></ul>
-          <label class="switch">
-            <input type="checkbox" id="relax-toggle">
-            <span>Modalità relax (niente punteggio)</span>
-          </label>
-        </aside>
-
-        <div class="game-main">
-          <div class="game-topbar">
-            <div class="level-meta">
-              <p class="level-group" id="level-group">Forme di base</p>
-              <h3 id="level-name">Cerchio</h3>
-              <p class="level-hint" id="level-hint"></p>
-            </div>
-            <div class="meter-wrap">
-              <span class="meter-label">Copertura</span>
-              <div class="meter" role="presentation">
-                <div class="meter-fill" id="meter-fill"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="canvas-wrap">
-            <canvas id="board" width="1000" height="750" aria-label="Area di disegno: traccia la forma tratteggiata"></canvas>
-            <p class="canvas-hint" id="canvas-hint">Traccia la linea tratteggiata</p>
-          </div>
-
-          <div class="game-controls">
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-undo">Annulla tratto</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-clear">Ricomincia</button>
-            <button type="button" class="btn btn-primary" id="btn-score">Valuta il disegno</button>
-          </div>
-
-          <div class="result" id="result" hidden>
-            <p class="result-stars" id="result-stars" aria-hidden="true"></p>
-            <p class="result-score" id="result-score"></p>
-            <p class="result-text" id="result-text"></p>
-            <div class="result-actions">
-              <button type="button" class="btn btn-ghost btn-sm" id="btn-retry">Riprova</button>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-next">Livello successivo</button>
-            </div>
-          </div>
-
-          <p class="game-note">
-            Il punteggio misura quanto hai coperto la traccia e quanto è preciso il gesto.
-            I progressi restano in questo browser, senza account.
+          <h2>Da solo</h2>
+          <p class="mode-desc">
+            Nove disegni guidati, dal cerchio alla farfalla. Traccia la linea, ricevi il feedback
+            sul tratto e conquista le tre stelle.
           </p>
-        </div>
-      </div>
-    </div>
-  </section>
+          <ul class="mode-list">
+            <li>9 livelli in 3 percorsi</li>
+            <li>Punteggio su copertura e precisione</li>
+            <li>Progressi salvati nel browser</li>
+          </ul>
+          <span class="btn btn-primary">Gioca da solo</span>
+        </a>
 
-  <section class="section features">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Perché funziona</p>
-        <h2>Quattro cose, una sola app</h2>
-      </div>
-      <div class="feature-grid">
-        <article class="feature">
-          <h3>Impara</h3>
-          <p>Ogni livello isola una sola abilità: un cerchio, una curva, una simmetria. Meglio un gesto alla volta che dieci alla rinfusa.</p>
-        </article>
-        <article class="feature">
-          <h3>Ricevi feedback</h3>
-          <p>Il colore del tratto ti dice subito se sei sulla linea. Il punteggio arriva quando decidi tu, non a sorpresa.</p>
-        </article>
-        <article class="feature">
-          <h3>Divertiti</h3>
-          <p>Sessioni corte, senza timer e senza pubblicità: apri, disegni, chiudi. Le stelle sono un pretesto per tornare.</p>
-        </article>
-        <article class="feature">
-          <h3>Rilassati</h3>
-          <p>Il tratto lento e ripetuto calma la mano. È il motivo per cui molti lo chiamano il loro piccolo rituale.</p>
-        </article>
-      </div>
-    </div>
-  </section>
+        <a class="mode-card mode-card-duo" href="duo.html">
+          <div class="mode-thumb mode-thumb-duo" aria-hidden="true">
+            <svg viewBox="0 0 200 150">
+              <path d="M18 104c20-42 42-52 60-24 16 24 34 26 50-2 14-24 34-28 54-10"
+                    fill="none" stroke="#ff5c33" stroke-width="7" stroke-linecap="round"/>
+              <path d="M20 68c22-26 40-22 56 4 16 26 38 34 60 8 14-16 28-18 44-6"
+                    fill="none" stroke="#1f6feb" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="150" cy="112" r="7" fill="#1f6feb"/>
+            </svg>
+          </div>
+          <h2>Insieme ad un amico</h2>
+          <p class="mode-desc">
+            Una stanza con codice, una sola tela e i vostri colori. Ognuno vede i tratti dell'altro
+            mentre li fa, e alla fine scaricate il disegno.
+          </p>
+          <ul class="mode-list">
+            <li>Stanza con link da condividere</li>
+            <li>Tratti in tempo reale, cursore del compagno</li>
+            <li>Tela vuota o disegno da colorare</li>
+          </ul>
+          <span class="btn btn-ghost">Disegna con un amico</span>
+        </a>
 
-  <section id="come-funziona" class="section steps">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Metodo efficace</p>
-        <h2>Come funziona</h2>
       </div>
-      <div class="step-grid">
-        <article class="step">
-          <p class="step-num">1.</p>
-          <h3>Scegli un livello</h3>
-          <p>Nove disegni in ordine di difficoltà, dal cerchio alla farfalla. Il successivo si sblocca quando ne completi uno.</p>
-        </article>
-        <article class="step">
-          <p class="step-num">2.</p>
-          <h3>Traccia con guida</h3>
-          <p>Disegna sopra la linea tratteggiata. La guida resta sempre visibile e il tuo tratto si colora mentre procedi.</p>
-        </article>
-        <article class="step">
-          <p class="step-num">3.</p>
-          <h3>Valuta e migliora</h3>
-          <p>Premi Valuta: il punteggio unisce copertura e precisione. Con almeno una stella sblocchi il livello successivo.</p>
-        </article>
-      </div>
-    </div>
-  </section>
 
-  <section id="livelli" class="section courses">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Percorsi di disegno</p>
-        <h2>Percorsi per ogni livello</h2>
-        <p class="section-lede">Lezioni brevi e guidate, con feedback immediato. Scegli da dove partire.</p>
-      </div>
-      <div class="course-grid" id="course-grid"></div>
-    </div>
-  </section>
-
-  <section id="metodo" class="section method">
-    <div class="wrap method-inner">
-      <div class="method-art" aria-hidden="true">
-        <span class="dot dot-a"></span>
-        <span class="dot dot-b"></span>
-        <span class="squiggle"></span>
-      </div>
-      <div class="method-copy">
-        <p class="eyebrow">Il nostro metodo</p>
-        <h2>Il disegno come piccola palestra</h2>
-        <p>
-          Matita è nato come una sfida tecnica: un algoritmo può capire come disegni? La risposta
-          è stata sì, ed è diventata un gioco. Tre regole, sempre le stesse.
-        </p>
-        <ul class="method-list">
-          <li><strong>Un gesto alla volta.</strong> Ogni livello insegna una cosa sola: la ripetizione fa il resto.</li>
-          <li><strong>Feedback immediato.</strong> Sapere subito dove sei fuori linea vale più di dieci consigli scritti.</li>
-          <li><strong>Nessuna fretta.</strong> Niente timer: la mano impara quando è calma.</li>
-        </ul>
-        <p class="method-note">
-          Nove livelli, tre percorsi, un canvas da 1000 × 750 pixel e nessun tracciamento: tutto
-          quello che disegni resta sul tuo dispositivo.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <section id="faq" class="section faq">
-    <div class="wrap faq-inner">
-      <div class="section-head">
-        <p class="eyebrow">FAQ</p>
-        <h2>Domande frequenti</h2>
-      </div>
-      <div class="faq-list">
-        <details>
-          <summary>In che modo Matita può aiutarmi?</summary>
-          <p>Ti dà una traccia chiara da seguire e un giudizio immediato sul tratto. È un modo semplice per allenare la mano e, se ti va, per passare cinque minuti senza schermo che corre.</p>
-        </details>
-        <details>
-          <summary>Quanto tempo serve per vedere i progressi?</summary>
-          <p>Dipende da te. La maggior parte dei livelli chiede due o tre tentativi: il tratto migliora quando ripeti lo stesso gesto, non quando passi al disegno successivo.</p>
-        </details>
-        <details>
-          <summary>Posso disegnare con gli amici?</summary>
-          <p>Non ancora: Matita è un gioco in solitaria. Non c'è una modalità multiplayer e non serve una connessione, perché gira interamente nel browser.</p>
-        </details>
-        <details>
-          <summary>Matita è adatta ai bambini?</summary>
-          <p>Sì: non ci sono pubblicità, acquisti, account o classifiche. Le forme sono pensate per essere tracciabili anche con un dito su un tablet.</p>
-        </details>
-        <details>
-          <summary>Perché Matita è meglio dei tutorial video?</summary>
-          <p>Un video mostra il risultato, non il tuo tratto. Qui la guida sta sotto la tua mano e il feedback arriva sul disegno che stai facendo davvero.</p>
-        </details>
-        <details>
-          <summary>Quanto costa?</summary>
-          <p>Niente. È una pagina statica: si apre, si gioca e i progressi restano salvati in locale nel browser.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <section class="section duo-teaser">
-    <div class="wrap duo-teaser-inner">
-      <div>
-        <p class="eyebrow">Novità</p>
-        <h2>Disegna in due, in tempo reale</h2>
-        <p>Una stanza, una sola tela, due colori: disegnate lo stesso disegno insieme e vedete i tratti dell'altro mentre li fa, non alla fine.</p>
-      </div>
-      <a class="btn btn-primary" href="duo.html">Apri il disegno a due</a>
-    </div>
-  </section>
-
-  <section class="cta">
-    <div class="wrap cta-inner">
-      <h2>Fai spazio alla creatività</h2>
-      <p>Un disegno, tre stelle, cinque minuti. Inizia dal cerchio.</p>
-      <a class="btn btn-primary" href="#gioco">Gioca gratis</a>
+      <p class="mode-note">
+        Nessuna installazione, nessun account: tutto gira nel browser. Serve solo una connessione
+        per giocare in due.
+      </p>
     </div>
   </section>
 
@@ -284,24 +100,21 @@
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <div class="footer-brand">
-      <a class="brand" href="#top">
+      <a class="brand" href="index.html">
         <span class="brand-mark" aria-hidden="true"></span>
         <span>Matita</span>
       </a>
-      <p>Disegna, impara, rilassati. Un gioco statico per GitHub Pages.</p>
+      <p>Disegna, impara, rilassati. Da solo o in due.</p>
     </div>
     <nav class="footer-nav" aria-label="Collegamenti del sito">
-      <a href="#gioco">Gioca</a>
-      <a href="duo.html">Disegna in due</a>
-      <a href="#livelli">Percorsi</a>
-      <a href="#metodo">Metodo</a>
-      <a href="#faq">FAQ</a>
+      <a href="solo.html">Da solo</a>
+      <a href="duo.html">In due</a>
+      <a href="solo.html#metodo">Metodo</a>
+      <a href="solo.html#faq">FAQ</a>
     </nav>
     <p class="footer-legal">© 2026 Matita · HTML, CSS e un canvas · Italiano (IT)</p>
   </div>
 </footer>
 
-<script src="js/levels.js"></script>
-<script src="js/game.js"></script>
 </body>
 </html>
