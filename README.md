@@ -4,9 +4,10 @@ Gioco di disegno guidato nel browser: traccia la linea tratteggiata, il tratto s
 alla precisione, poi premi **Valuta il disegno** per ottenere punteggio e stelle. Nove livelli,
 tre percorsi, progressi salvati in `localStorage`.
 
-Alla radice `index.html` fa scegliere la modalità: **Da solo** (`solo.html`) o **Insieme ad un
-amico** (`duo.html`). In due si apre una stanza con codice, c'è una sola tela condivisa con la
-traccia da seguire e i tratti sono sincronizzati in tempo reale, ognuno col suo colore.
+La radice `index.html` è la landing con il gioco guidato. La schermata **«Come vuoi giocare?»** sta
+in `scegli/` e porta alle due modalità: **Da solo** (`index.html`) o **Insieme ad un amico**
+(`duo.html`). In due si apre una stanza con codice, c'è una sola tela condivisa con la traccia da
+seguire e i tratti sono sincronizzati in tempo reale, ognuno col suo colore.
 
 Nessuna build: HTML, CSS e JavaScript. L'unica libreria è PeerJS, inclusa in `js/vendor/`.
 
@@ -40,14 +41,16 @@ python -m http.server 8000
 
 Il sito è statico e viene servito direttamente dal branch `main` (root della repo):
 
-<https://gattoitA-lab.github.io/matita/>
+- Gioco da solo: <https://gattoitA-lab.github.io/matita/>
+- «Come vuoi giocare?»: <https://gattoitA-lab.github.io/matita/scegli/>
+- Disegno in due: <https://gattoitA-lab.github.io/matita/duo.html>
 
 ## Struttura
 
 | File | Contenuto |
 | --- | --- |
-| `index.html` | Schermata «Come vuoi giocare?» con le due modalità |
-| `solo.html` | Landing e gioco guidato in solitaria |
+| `index.html` | Landing e gioco guidato in solitaria |
+| `scegli/index.html` | Schermata «Come vuoi giocare?» con le due modalità |
 | `styles.css` | Stile, layout responsive |
 | `js/levels.js` | Forme dei nove livelli e percorsi |
 | `js/game.js` | Canvas, input, punteggio, stelle, progressi |
