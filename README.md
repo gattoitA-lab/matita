@@ -16,6 +16,12 @@ Nessuna build: HTML, CSS e JavaScript. L'unica libreria è PeerJS, inclusa in `j
 3. Scegliete il disegno da seguire e coloratelo insieme: ogni tratto compare sullo schermo
 dell'altro mentre viene disegnato, e il puntino colorato mostra dove sta disegnando il compagno.
 
+Extra della stanza:
+
+- **Tela vuota** tra i disegni: nessuna traccia, si disegna quello che si vuole.
+- **Scarica disegno** salva un PNG 2000×1500 con tutto ciò che avete fatto insieme.
+- **Schermo pieno** porta la tela a tutta finestra con colori e strumenti sotto mano (si esce con Esc).
+
 Il collegamento usa WebRTC: la segnalazione passa dal cloud pubblico di PeerJS, i disegni viaggiano
 direttamente tra i due browser. Nessun tratto viene salvato su un server. Le reti che bloccano il
 P2P (alcune reti aziendali o mobili molto restrittive) possono impedire il collegamento.

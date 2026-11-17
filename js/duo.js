@@ -10,7 +10,6 @@
   var CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   var COLORS = ['#17130f', '#ff5c33', '#e0a637', '#1f8a5f', '#1f6feb', '#a855f7', '#e0567a'];
   var SIZES = [4, 9, 16];
-  var LESSON_IDS = ['pesce', 'gatto', 'farfalla', 'stella', 'cuore', 'foglia'];
   var FLUSH_MS = 40;
   var CURSOR_MS = 90;
 
@@ -27,6 +26,8 @@
   var btnLeave = document.getElementById('btn-leave');
   var btnUndo = document.getElementById('btn-undo-duo');
   var btnClear = document.getElementById('btn-clear-duo');
+  var btnDownload = document.getElementById('btn-download');
+  var btnFocus = document.getElementById('btn-focus');
   var colorPicker = document.getElementById('color-picker');
   var sizePicker = document.getElementById('size-picker');
   var lessonPicker = document.getElementById('duo-lessons');
@@ -36,12 +37,23 @@
   if (!canvas || !ctx) return;
 
   var LEVELS = window.MATITA_LEVELS || [];
+  var BLANK_ID = 'vuoto';
 
   function lessonById(id) {
     for (var i = 0; i < LEVELS.length; i++) {
       if (LEVELS[i].id === id) return LEVELS[i];
     }
     return null;
+  }
+
+  function isLessonId(id) {
+    return id === BLANK_ID || !!lessonById(id);
+  }
+
+  function lessonChoices() {
+    var out = [{ id: BLANK_ID, name: 'Tela vuota' }];
+    for (var i = 0; i < LEVELS.length; i++) out.push({ id: LEVELS[i].id, name: LEVELS[i].name });
+    return out;
   }
 
   var state = {
@@ -416,7 +428,7 @@
   }
 
   function applyLesson(id, broadcast) {
-    if (!lessonById(id)) return;
+    if (!isLessonId(id)) return;
     state.lessonId = id;
     renderLessons();
     requestDraw();
@@ -455,57 +467,126 @@
   function paint() {
     raf = 0;
     if (!sx || !sy) return;
-    ctx.setTransform(sx, 0, 0, sy, 0, 0);
-    ctx.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawScene(ctx, sx, sy, true);
+  }
 
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
+  function drawScene(target, scaleX, scaleY, withCursor) {
     var lesson = lessonById(state.lessonId);
+    target.save();
+    target.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+    target.lineCap = 'round';
+    target.lineJoin = 'round';
+
     if (lesson) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(90, 130, 190, 0.5)';
-      ctx.lineWidth = 4;
-      ctx.stroke(new Path2D(lesson.d));
-      ctx.restore();
+      target.strokeStyle = 'rgba(90, 130, 190, 0.5)';
+      target.lineWidth = 4;
+      target.stroke(new Path2D(lesson.d));
     }
 
     for (var i = 0; i < state.strokes.length; i++) {
       var stroke = state.strokes[i];
       if (!stroke.pts.length) continue;
-      ctx.strokeStyle = stroke.color;
-      ctx.fillStyle = stroke.color;
-      ctx.lineWidth = stroke.size;
+      target.strokeStyle = stroke.color;
+      target.fillStyle = stroke.color;
+      target.lineWidth = stroke.size;
       if (stroke.pts.length === 1) {
-        ctx.beginPath();
-        ctx.arc(stroke.pts[0].x, stroke.pts[0].y, stroke.size / 2, 0, Math.PI * 2);
-        ctx.fill();
+        target.beginPath();
+        target.arc(stroke.pts[0].x, stroke.pts[0].y, stroke.size / 2, 0, Math.PI * 2);
+        target.fill();
         continue;
       }
-      ctx.beginPath();
-      ctx.moveTo(stroke.pts[0].x, stroke.pts[0].y);
+      target.beginPath();
+      target.moveTo(stroke.pts[0].x, stroke.pts[0].y);
       for (var p = 1; p < stroke.pts.length; p++) {
-        ctx.lineTo(stroke.pts[p].x, stroke.pts[p].y);
+        target.lineTo(stroke.pts[p].x, stroke.pts[p].y);
       }
-      ctx.stroke();
+      target.stroke();
     }
 
-    if (state.partnerCursor && state.connected) {
+    if (withCursor && state.partnerCursor && state.connected) {
       var c = state.partnerCursor;
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, 9, 0, Math.PI * 2);
-      ctx.fillStyle = state.partnerColor || '#1f6feb';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(255, 253, 249, 0.95)';
-      ctx.stroke();
+      target.beginPath();
+      target.arc(c.x, c.y, 9, 0, Math.PI * 2);
+      target.fillStyle = state.partnerColor || '#1f6feb';
+      target.fill();
+      target.lineWidth = 3;
+      target.strokeStyle = 'rgba(255, 253, 249, 0.95)';
+      target.stroke();
     }
 
-    ctx.restore();
+    target.restore();
+  }
+
+  function renderToImage() {
+    var scale = 2;
+    var out = document.createElement('canvas');
+    out.width = LOGICAL_W * scale;
+    out.height = LOGICAL_H * scale;
+    var octx = out.getContext('2d');
+    octx.fillStyle = '#fffdf9';
+    octx.fillRect(0, 0, out.width, out.height);
+    drawScene(octx, scale, scale, false);
+    return out;
+  }
+
+  function downloadDrawing() {
+    var image = renderToImage();
+    var name = 'matita-' + (state.code || 'duo') + '.png';
+    var save = function (href, revoke) {
+      var a = document.createElement('a');
+      a.href = href;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      if (revoke) window.setTimeout(function () { URL.revokeObjectURL(href); }, 5000);
+    };
+    if (image.toBlob) {
+      image.toBlob(function (blob) {
+        if (!blob) { save(image.toDataURL('image/png'), false); return; }
+        save(URL.createObjectURL(blob), true);
+      }, 'image/png');
+    } else {
+      save(image.toDataURL('image/png'), false);
+    }
+  }
+
+  function toggleFocus(force) {
+    var on = typeof force === 'boolean' ? force : !document.body.classList.contains('focus-mode');
+    document.body.classList.toggle('focus-mode', on);
+    if (btnFocus) {
+      btnFocus.textContent = on ? 'Esci dallo schermo pieno' : 'Schermo pieno';
+      btnFocus.setAttribute('aria-pressed', String(on));
+    }
+    resize();
+    window.setTimeout(resize, 60);
+    window.setTimeout(resize, 200);
+  }
+
+  function fitCanvas() {
+    var wrap = canvas.parentElement;
+    if (document.body.classList.contains('focus-mode') && wrap) {
+      var ratio = LOGICAL_W / LOGICAL_H;
+      var availW = wrap.clientWidth;
+      var availH = wrap.clientHeight;
+      var w = availW;
+      var h = w / ratio;
+      if (h > availH) {
+        h = availH;
+        w = h * ratio;
+      }
+      canvas.style.width = Math.max(1, Math.floor(w)) + 'px';
+      canvas.style.height = Math.max(1, Math.floor(h)) + 'px';
+    } else if (canvas.style.width) {
+      canvas.style.width = '';
+      canvas.style.height = '';
+    }
   }
 
   function resize() {
+    fitCanvas();
     var rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -625,15 +706,13 @@
   function renderLessons() {
     if (!lessonPicker) return;
     lessonPicker.innerHTML = '';
-    LESSON_IDS.forEach(function (id) {
-      var lesson = lessonById(id);
-      if (!lesson) return;
+    lessonChoices().forEach(function (choice) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'lesson-chip';
-      btn.textContent = lesson.name;
-      btn.setAttribute('aria-pressed', String(id === state.lessonId));
-      btn.addEventListener('click', function () { applyLesson(id, true); });
+      btn.textContent = choice.name;
+      btn.setAttribute('aria-pressed', String(choice.id === state.lessonId));
+      btn.addEventListener('click', function () { applyLesson(choice.id, true); });
       lessonPicker.appendChild(btn);
     });
   }
@@ -722,6 +801,18 @@
     clearAll();
   });
 
+  if (btnDownload) {
+    btnDownload.addEventListener('click', downloadDrawing);
+  }
+
+  if (btnFocus) {
+    btnFocus.addEventListener('click', function () { toggleFocus(); });
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && document.body.classList.contains('focus-mode')) toggleFocus(false);
+  });
+
   window.addEventListener('resize', resize);
   if (window.ResizeObserver) {
     new ResizeObserver(resize).observe(canvas);
@@ -734,6 +825,7 @@
     strokeCount: function () { return state.strokes.length; },
     lesson: function () { return state.lessonId; }
   };
+
 
   /* ---------- avvio ---------- */
 

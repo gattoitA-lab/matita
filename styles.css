@@ -965,6 +965,75 @@ body.relax #btn-score { opacity: 0.45; }
 
 .legend-item-partner { color: var(--muted); }
 
+/* schermo pieno */
+
+body.focus-mode { overflow: hidden; }
+
+body.focus-mode .site-header,
+body.focus-mode .duo-hero,
+body.focus-mode .room-bar,
+body.focus-mode .duo-steps,
+body.focus-mode .site-footer,
+body.focus-mode .duo-lessons-row,
+body.focus-mode .duo-legend,
+body.focus-mode .game-note {
+  display: none;
+}
+
+body.focus-mode .duo-section { padding: 0; }
+body.focus-mode .wrap { width: 100%; margin: 0; }
+
+body.focus-mode .duo-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  margin: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: none;
+}
+
+body.focus-mode .duo-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.focus-mode #duo-board {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  flex: 0 0 auto;
+}
+
+body.focus-mode .duo-hint { display: none; }
+
+body.focus-mode .duo-tools {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 253, 249, 0.96);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+body.focus-mode .duo-tools-end { margin-left: 0; }
+
+@media (max-width: 620px) {
+  body.focus-mode .duo-tools { gap: 10px; }
+  body.focus-mode .swatch { width: 24px; height: 24px; }
+  body.focus-mode .size-btn { width: 30px; height: 30px; }
+}
+
 .duo-hint {
   position: absolute;
   left: 50%;
