@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disegna in due — Matita</title>
+<meta name="description" content="Disegnate insieme in tempo reale: una stanza, due lati della stessa tela. Tu a sinistra, il tuo compagno a destra.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff5c33'/%3E%3Cpath d='M9 23l1.8-4.6 8.4-8.4 3 3-8.4 8.4L9 23z' fill='%23fffdf9'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Matita</span>
+    </a>
+    <nav class="main-nav" aria-label="Navigazione principale">
+      <a href="index.html#gioco">Gioco da solo</a>
+      <a href="#tavolo">Tavolo condiviso</a>
+      <a href="index.html#method">Metodo</a>
+      <a href="index.html#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <span class="lang">Italiano (IT)</span>
+      <a class="btn btn-ghost btn-sm" href="index.html">Torna al gioco</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="duo-hero">
+    <div class="wrap">
+      <p class="eyebrow">Disegno a quattro mani</p>
+      <h1>Disegnate insieme, ognuno nel suo spazio</h1>
+      <p class="lede">
+        Crea una stanza e manda il link: tu disegni a sinistra, il tuo compagno a destra.
+        Ogni tratto compare sullo schermo dell'altro mentre lo fai, non alla fine.
+      </p>
+    </div>
+  </section>
+
+  <section id="tavolo" class="section duo-section">
+    <div class="wrap">
+
+      <div class="room-bar">
+        <div class="room-actions" id="room-idle">
+          <button type="button" class="btn btn-primary" id="btn-create">Crea una stanza</button>
+          <span class="room-or">oppure</span>
+          <div class="room-join">
+            <label class="sr-only" for="room-code">Codice stanza</label>
+            <input id="room-code" maxlength="5" placeholder="Codice" autocomplete="off" spellcheck="false" inputmode="text">
+            <button type="button" class="btn btn-ghost" id="btn-join">Entra</button>
+          </div>
+        </div>
+
+        <div class="room-live" id="room-live" hidden>
+          <div class="room-code-display">Stanza <strong id="room-code-label">—</strong></div>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-copy">Copia link</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-leave">Esci</button>
+        </div>
+
+        <p class="room-status" id="room-status" data-state="idle" role="status">
+          Crea una stanza per iniziare, oppure entra con un codice.
+        </p>
+      </div>
+
+      <div class="duo-shell">
+        <div class="canvas-wrap duo-canvas-wrap">
+          <canvas id="duo-board" width="1000" height="750" aria-label="Tela condivisa: disegna nella tua metà"></canvas>
+          <span class="side-badge side-badge-left" id="badge-left">Sinistra</span>
+          <span class="side-badge side-badge-right" id="badge-right">Destra</span>
+          <p class="duo-hint" id="duo-hint">Crea una stanza per disegnare</p>
+        </div>
+
+        <div class="duo-tools">
+          <div class="tool-group" id="color-picker" role="group" aria-label="Colore del tratto"></div>
+          <div class="tool-group" id="size-picker" role="group" aria-label="Spessore del tratto"></div>
+          <div class="duo-tools-end">
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-undo-duo">Annulla</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-duo">Pulisci il mio lato</button>
+          </div>
+        </div>
+
+        <p class="game-note">
+          Ogni giocatore può disegnare solo nella propria metà. I tratti viaggiano diretti tra i due
+          browser: nessun disegno viene salvato su un server.
+        </p>
+      </div>
+
+      <div class="duo-steps">
+        <article>
+          <h3>1. Crea la stanza</h3>
+          <p>Ti viene assegnato un codice di cinque caratteri e il lato sinistro della tela.</p>
+        </article>
+        <article>
+          <h3>2. Manda il link</h3>
+          <p>“Copia link” mette negli appunti l'indirizzo con il codice: chi lo apre finisce subito nella stanza.</p>
+        </article>
+        <article>
+          <h3>3. Disegnate</h3>
+          <p>Il compagno prende il lato destro. Vedete i rispettivi tratti in tempo reale, ognuno col suo colore.</p>
+        </article>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Matita</span>
+      </a>
+      <p>Disegna, impara, rilassati. Anche in due.</p>
+    </div>
+    <nav class="footer-nav" aria-label="Collegamenti del sito">
+      <a href="index.html#gioco">Gioco da solo</a>
+      <a href="duo.html">Disegna in due</a>
+      <a href="index.html#faq">FAQ</a>
+    </nav>
+    <p class="footer-legal">© 2026 Matita · HTML, CSS, canvas e WebRTC · Italiano (IT)</p>
+  </div>
+</footer>
+
+<script src="js/vendor/peerjs.min.js"></script>
+<script src="js/duo.js"></script>
+</body>
+</html>
