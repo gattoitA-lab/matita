@@ -1,17 +1,18 @@
 /* Matita — disegno in due.
-   Tela divisa a metà: ogni giocatore disegna nel proprio lato e riceve i tratti
-   dell'altro in tempo reale via WebRTC (PeerJS, segnalazione sul cloud pubblico). */
+   Una sola tela condivisa con la traccia da seguire: ogni giocatore disegna
+   con il proprio colore e vede i tratti dell'altro in tempo reale (WebRTC). */
 (function () {
   'use strict';
 
   var LOGICAL_W = 1000;
   var LOGICAL_H = 750;
-  var SPLIT = 500;
   var PEER_PREFIX = 'matita-duo-';
   var CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   var COLORS = ['#17130f', '#ff5c33', '#e0a637', '#1f8a5f', '#1f6feb', '#a855f7', '#e0567a'];
   var SIZES = [4, 9, 16];
+  var LESSON_IDS = ['pesce', 'gatto', 'farfalla', 'stella', 'cuore', 'foglia'];
   var FLUSH_MS = 40;
+  var CURSOR_MS = 90;
 
   var canvas = document.getElementById('duo-board');
   var ctx = canvas ? canvas.getContext('2d') : null;
@@ -28,15 +29,23 @@
   var btnClear = document.getElementById('btn-clear-duo');
   var colorPicker = document.getElementById('color-picker');
   var sizePicker = document.getElementById('size-picker');
+  var lessonPicker = document.getElementById('duo-lessons');
+  var legend = document.getElementById('duo-legend');
   var duoHint = document.getElementById('duo-hint');
-  var badgeLeft = document.getElementById('badge-left');
-  var badgeRight = document.getElementById('badge-right');
 
   if (!canvas || !ctx) return;
 
+  var LEVELS = window.MATITA_LEVELS || [];
+
+  function lessonById(id) {
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (LEVELS[i].id === id) return LEVELS[i];
+    }
+    return null;
+  }
+
   var state = {
     role: null,
-    side: null,
     code: null,
     peer: null,
     conn: null,
@@ -45,8 +54,12 @@
     active: null,
     pending: [],
     flushTimer: 0,
+    cursorTimer: 0,
     color: COLORS[1],
+    partnerColor: null,
+    partnerCursor: null,
     size: SIZES[1],
+    lessonId: 'pesce',
     seq: 0,
     drawing: false
   };
@@ -80,8 +93,7 @@
   }
 
   function shareUrl(code) {
-    var base = window.location.origin + window.location.pathname;
-    return base + '?room=' + encodeURIComponent(code);
+    return window.location.origin + window.location.pathname + '?room=' + encodeURIComponent(code);
   }
 
   function rememberCode(code) {
@@ -96,6 +108,8 @@
     state.connected = false;
     state.drawing = false;
     state.active = null;
+    state.partnerCursor = null;
+    state.partnerColor = null;
     if (state.conn) {
       try { state.conn.close(); } catch (err) { /* ignora */ }
     }
@@ -108,6 +122,10 @@
     if (state.flushTimer) {
       window.clearTimeout(state.flushTimer);
       state.flushTimer = 0;
+    }
+    if (state.cursorTimer) {
+      window.clearTimeout(state.cursorTimer);
+      state.cursorTimer = 0;
     }
   }
 
@@ -122,7 +140,6 @@
 
   function startHost(code) {
     state.role = 'host';
-    state.side = 'left';
     state.code = code;
     state.color = COLORS[1];
     state.strokes = [];
@@ -131,8 +148,9 @@
     setRoomVisible(true);
     setStatus('waiting', 'Sto aprendo la stanza…');
     hideHint();
-    renderBadges();
     renderTools();
+    renderLegend();
+    renderLessons();
     requestDraw();
 
     var peer = new window.Peer(PEER_PREFIX + code, { debug: 1 });
@@ -140,7 +158,8 @@
 
     peer.on('open', function () {
       if (state.code !== code) return;
-      setStatus('waiting', 'Stanza ' + code + ' pronta. Manda il link al tuo compagno e intanto disegna a sinistra.');
+      setStatus('waiting', 'Stanza ' + code + ' pronta. Manda il link: appena entra, disegnate sulla stessa tela.');
+      sendHello();
       sendSnapshot();
     });
 
@@ -162,7 +181,6 @@
     }
     teardown();
     state.role = 'guest';
-    state.side = 'right';
     state.code = code;
     state.color = COLORS[4];
     state.strokes = [];
@@ -171,8 +189,9 @@
     setRoomVisible(true);
     setStatus('connecting', 'Mi collego alla stanza ' + code + '…');
     hideHint();
-    renderBadges();
     renderTools();
+    renderLegend();
+    renderLessons();
     requestDraw();
 
     var peer = new window.Peer({ debug: 1 });
@@ -192,12 +211,11 @@
 
     conn.on('open', function () {
       state.connected = true;
-      try { conn.send({ t: 'hello', side: state.side }); } catch (err) { /* ignora */ }
+      sendHello();
       sendSnapshot();
-      var who = state.role === 'host' ? 'destra' : 'sinistra';
-      setStatus('online', 'Collegati: il tuo compagno disegna a ' + who + '. Si comincia.');
+      setStatus('online', 'Collegati: state disegnando sulla stessa tela, ognuno con il suo colore.');
       hideHint();
-      renderBadges();
+      renderLegend();
       requestDraw();
     });
 
@@ -206,15 +224,17 @@
     conn.on('close', function () {
       state.connected = false;
       state.conn = null;
-      setStatus('offline', 'Il compagno si è disconnesso. Il disegno resta qui: ricarica o rientra per riprovare.');
-      renderBadges();
+      state.partnerCursor = null;
+      setStatus('offline', 'Il compagno si è disconnesso. Il disegno resta qui: rientra nella stanza per continuare.');
+      renderLegend();
       requestDraw();
     });
 
     conn.on('error', function () {
       state.connected = false;
+      state.partnerCursor = null;
       setStatus('error', 'Collegamento interrotto. Riprova a creare o entrare nella stanza.');
-      renderBadges();
+      renderLegend();
     });
 
     if (isGuest && conn.open) {
@@ -250,15 +270,18 @@
     try { state.conn.send(message); } catch (err) { /* canale chiuso */ }
   }
 
+  function sendHello() {
+    send({ t: 'hello', color: state.color, lesson: state.lessonId });
+  }
+
   function sendSnapshot() {
     if (!state.strokes.length) return;
-    send({ t: 'snapshot', strokes: state.strokes.map(serializeStroke) });
+    send({ t: 'snapshot', lesson: state.lessonId, strokes: state.strokes.map(serializeStroke) });
   }
 
   function serializeStroke(stroke) {
     return {
       id: stroke.id,
-      side: stroke.side,
       color: stroke.color,
       size: stroke.size,
       pts: stroke.pts.map(function (p) { return [Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10]; })
@@ -269,14 +292,24 @@
     if (!message || typeof message !== 'object') return;
     switch (message.t) {
       case 'hello':
-        if (message.side === 'left' || message.side === 'right') {
-          state.partnerSide = message.side;
-          renderBadges();
+        if (typeof message.color === 'string') state.partnerColor = message.color;
+        if (typeof message.lesson === 'string') applyLesson(message.lesson, false);
+        renderLegend();
+        requestDraw();
+        break;
+      case 'color':
+        if (typeof message.color === 'string') {
+          state.partnerColor = message.color;
+          renderLegend();
         }
+        break;
+      case 'lesson':
+        if (typeof message.lesson === 'string') applyLesson(message.lesson, false);
         break;
       case 'snapshot':
         if (Array.isArray(message.strokes)) {
           message.strokes.forEach(mergeStroke);
+          if (typeof message.lesson === 'string') applyLesson(message.lesson, false);
           requestDraw();
         }
         break;
@@ -287,7 +320,14 @@
         removeStroke(message.id);
         break;
       case 'clear':
-        clearSide(message.side);
+        state.strokes = [];
+        requestDraw();
+        break;
+      case 'cursor':
+        if (typeof message.x === 'number' && typeof message.y === 'number') {
+          state.partnerCursor = clampPoint(message.x, message.y);
+          requestDraw();
+        }
         break;
       default:
         break;
@@ -296,15 +336,14 @@
 
   function clampPoint(x, y) {
     return {
-      x: Math.min(Math.max(x, 2), LOGICAL_W - 2),
-      y: Math.min(Math.max(y, 2), LOGICAL_H - 2)
+      x: Math.min(Math.max(x, 1), LOGICAL_W - 1),
+      y: Math.min(Math.max(y, 1), LOGICAL_H - 1)
     };
   }
 
   function makeStroke(raw) {
     return {
       id: raw.id,
-      side: raw.side === 'left' ? 'left' : 'right',
       color: typeof raw.color === 'string' ? raw.color : '#17130f',
       size: typeof raw.size === 'number' ? raw.size : SIZES[1],
       pts: [],
@@ -358,15 +397,9 @@
     }
   }
 
-  function clearSide(side) {
-    if (side !== 'left' && side !== 'right') return;
-    state.strokes = state.strokes.filter(function (stroke) { return stroke.side !== side; });
-    requestDraw();
-  }
-
   function removeLastOwn() {
     for (var i = state.strokes.length - 1; i >= 0; i--) {
-      if (state.strokes[i].side === state.side) {
+      if (!state.strokes[i].remote) {
         var id = state.strokes[i].id;
         state.strokes.splice(i, 1);
         send({ t: 'undo', id: id });
@@ -376,9 +409,18 @@
     }
   }
 
-  function clearOwn() {
-    clearSide(state.side);
-    send({ t: 'clear', side: state.side });
+  function clearAll() {
+    state.strokes = [];
+    send({ t: 'clear' });
+    requestDraw();
+  }
+
+  function applyLesson(id, broadcast) {
+    if (!lessonById(id)) return;
+    state.lessonId = id;
+    renderLessons();
+    requestDraw();
+    if (broadcast) send({ t: 'lesson', lesson: id });
   }
 
   function flushPending() {
@@ -386,7 +428,7 @@
     if (!state.pending.length || !state.active) return;
     var batch = state.pending;
     state.pending = [];
-    send({ t: 's', id: state.active.id, side: state.side, color: state.active.color, size: state.active.size, pts: batch });
+    send({ t: 's', id: state.active.id, color: state.active.color, size: state.active.size, pts: batch });
   }
 
   function queuePoints(points) {
@@ -394,6 +436,14 @@
       state.pending.push([Math.round(points[i].x * 10) / 10, Math.round(points[i].y * 10) / 10]);
     }
     if (!state.flushTimer) state.flushTimer = window.setTimeout(flushPending, FLUSH_MS);
+  }
+
+  function queueCursor(point) {
+    if (state.cursorTimer) return;
+    state.cursorTimer = window.setTimeout(function () {
+      state.cursorTimer = 0;
+      send({ t: 'cursor', x: point.x, y: point.y });
+    }, CURSOR_MS);
   }
 
   /* ---------- disegno ---------- */
@@ -412,18 +462,28 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
+    var lesson = lessonById(state.lessonId);
+    if (lesson) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(90, 130, 190, 0.5)';
+      ctx.lineWidth = 4;
+      ctx.stroke(new Path2D(lesson.d));
+      ctx.restore();
+    }
+
     for (var i = 0; i < state.strokes.length; i++) {
       var stroke = state.strokes[i];
       if (!stroke.pts.length) continue;
       ctx.strokeStyle = stroke.color;
+      ctx.fillStyle = stroke.color;
       ctx.lineWidth = stroke.size;
-      ctx.beginPath();
       if (stroke.pts.length === 1) {
+        ctx.beginPath();
         ctx.arc(stroke.pts[0].x, stroke.pts[0].y, stroke.size / 2, 0, Math.PI * 2);
-        ctx.fillStyle = stroke.color;
         ctx.fill();
         continue;
       }
+      ctx.beginPath();
       ctx.moveTo(stroke.pts[0].x, stroke.pts[0].y);
       for (var p = 1; p < stroke.pts.length; p++) {
         ctx.lineTo(stroke.pts[p].x, stroke.pts[p].y);
@@ -431,16 +491,17 @@
       ctx.stroke();
     }
 
-    ctx.restore();
+    if (state.partnerCursor && state.connected) {
+      var c = state.partnerCursor;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 9, 0, Math.PI * 2);
+      ctx.fillStyle = state.partnerColor || '#1f6feb';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255, 253, 249, 0.95)';
+      ctx.stroke();
+    }
 
-    ctx.save();
-    ctx.setLineDash([12, 12]);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'rgba(23, 19, 15, 0.22)';
-    ctx.beginPath();
-    ctx.moveTo(SPLIT, 0);
-    ctx.lineTo(SPLIT, LOGICAL_H);
-    ctx.stroke();
     ctx.restore();
   }
 
@@ -459,17 +520,16 @@
 
   function pointFromEvent(event) {
     var rect = canvas.getBoundingClientRect();
-    var x = ((event.clientX - rect.left) / rect.width) * LOGICAL_W;
-    var y = ((event.clientY - rect.top) / rect.height) * LOGICAL_H;
-    var min = state.side === 'left' ? 4 : SPLIT + 4;
-    var max = state.side === 'left' ? SPLIT - 4 : LOGICAL_W - 4;
-    return clampPoint(Math.min(Math.max(x, min), max), y);
+    return clampPoint(
+      ((event.clientX - rect.left) / rect.width) * LOGICAL_W,
+      ((event.clientY - rect.top) / rect.height) * LOGICAL_H
+    );
   }
 
   canvas.addEventListener('pointerdown', function (event) {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     event.preventDefault();
-    if (!state.side) {
+    if (!state.code) {
       setStatus('idle', 'Crea una stanza o entra con un codice per disegnare.');
       return;
     }
@@ -479,7 +539,6 @@
     var point = pointFromEvent(event);
     var stroke = {
       id: state.role + '-' + (++state.seq) + '-' + Date.now().toString(36),
-      side: state.side,
       color: state.color,
       size: state.size,
       pts: [point],
@@ -501,6 +560,7 @@
     if (Math.hypot(point.x - last.x, point.y - last.y) < 2) return;
     pts.push(point);
     queuePoints([point]);
+    queueCursor(point);
     requestDraw();
   });
 
@@ -522,7 +582,7 @@
     if (state.drawing) endStroke(event);
   });
 
-  /* ---------- comandi ---------- */
+  /* ---------- interfaccia ---------- */
 
   function renderTools() {
     colorPicker.innerHTML = '';
@@ -536,6 +596,8 @@
       btn.addEventListener('click', function () {
         state.color = color;
         renderTools();
+        renderLegend();
+        send({ t: 'color', color: color });
       });
       colorPicker.appendChild(btn);
     });
@@ -560,20 +622,43 @@
     });
   }
 
-  function renderBadges() {
-    var mine = state.side;
-    var partner = mine === 'left' ? 'right' : 'left';
-    setBadge(badgeLeft, 'left', mine, partner);
-    setBadge(badgeRight, 'right', mine, partner);
+  function renderLessons() {
+    if (!lessonPicker) return;
+    lessonPicker.innerHTML = '';
+    LESSON_IDS.forEach(function (id) {
+      var lesson = lessonById(id);
+      if (!lesson) return;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'lesson-chip';
+      btn.textContent = lesson.name;
+      btn.setAttribute('aria-pressed', String(id === state.lessonId));
+      btn.addEventListener('click', function () { applyLesson(id, true); });
+      lessonPicker.appendChild(btn);
+    });
   }
 
-  function setBadge(el, side, mine, partner) {
-    var label = side === 'left' ? 'Sinistra' : 'Destra';
-    var who = '';
-    if (side === mine) who = ' · tu';
-    else if (side === partner && state.connected) who = ' · compagno';
-    el.textContent = label + who;
-    el.dataset.mine = String(side === mine);
+  function renderLegend() {
+    if (!legend) return;
+    legend.innerHTML = '';
+    legend.appendChild(legendItem('Tu', state.color, true));
+    legend.appendChild(legendItem(
+      state.connected ? 'Compagno' : 'Compagno (in attesa)',
+      state.partnerColor || '#c9bfb1',
+      false
+    ));
+  }
+
+  function legendItem(label, color, mine) {
+    var span = document.createElement('span');
+    span.className = 'legend-item';
+    if (!mine) span.classList.add('legend-item-partner');
+    var dot = document.createElement('span');
+    dot.className = 'legend-dot';
+    dot.style.background = color;
+    span.appendChild(dot);
+    span.appendChild(document.createTextNode(label));
+    return span;
   }
 
   function hideHint() {
@@ -615,24 +700,26 @@
   btnLeave.addEventListener('click', function () {
     teardown();
     state.role = null;
-    state.side = null;
     state.code = null;
-    state.partnerSide = null;
     state.strokes = [];
     rememberCode(null);
     setRoomVisible(false);
     setStatus('idle', 'Sei uscito dalla stanza. Creane una nuova o entra con un codice.');
     duoHint.hidden = false;
     roomCodeInput.value = '';
-    renderBadges();
+    renderLegend();
     renderTools();
     requestDraw();
   });
 
-  btnUndo.addEventListener('click', removeLastOwn);
+  btnUndo.addEventListener('click', function () {
+    if (!state.code) return;
+    removeLastOwn();
+  });
+
   btnClear.addEventListener('click', function () {
-    if (!state.side) return;
-    clearOwn();
+    if (!state.code) return;
+    clearAll();
   });
 
   window.addEventListener('resize', resize);
@@ -640,19 +727,19 @@
     new ResizeObserver(resize).observe(canvas);
   }
 
-  /* hook di lettura per i test manuali e per la console */
   window.MatitaDuo = {
     status: function () { return statusEl.dataset.state; },
     code: function () { return state.code; },
-    side: function () { return state.side; },
     connected: function () { return state.connected; },
-    strokeCount: function () { return state.strokes.length; }
+    strokeCount: function () { return state.strokes.length; },
+    lesson: function () { return state.lessonId; }
   };
 
   /* ---------- avvio ---------- */
 
   renderTools();
-  renderBadges();
+  renderLessons();
+  renderLegend();
   resize();
 
   var params = new URLSearchParams(window.location.search);

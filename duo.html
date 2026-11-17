@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Disegna in due — Matita</title>
-<meta name="description" content="Disegnate insieme in tempo reale: una stanza, due lati della stessa tela. Tu a sinistra, il tuo compagno a destra.">
+<meta name="description" content="Disegnate insieme sulla stessa tela in tempo reale: una stanza, due colori, un solo disegno.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff5c33'/%3E%3Cpath d='M9 23l1.8-4.6 8.4-8.4 3 3-8.4 8.4L9 23z' fill='%23fffdf9'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -18,8 +18,8 @@
     </a>
     <nav class="main-nav" aria-label="Navigazione principale">
       <a href="index.html#gioco">Gioco da solo</a>
-      <a href="#tavolo">Tavolo condiviso</a>
-      <a href="index.html#method">Metodo</a>
+      <a href="#tavolo">Tela condivisa</a>
+      <a href="index.html#metodo">Metodo</a>
       <a href="index.html#faq">FAQ</a>
     </nav>
     <div class="header-actions">
@@ -34,10 +34,11 @@
   <section class="duo-hero">
     <div class="wrap">
       <p class="eyebrow">Disegno a quattro mani</p>
-      <h1>Disegnate insieme, ognuno nel suo spazio</h1>
+      <h1>Una tela sola, due mani</h1>
       <p class="lede">
-        Crea una stanza e manda il link: tu disegni a sinistra, il tuo compagno a destra.
-        Ogni tratto compare sullo schermo dell'altro mentre lo fai, non alla fine.
+        Crea una stanza e manda il link: il tuo compagno entra sulla <strong>stessa tela</strong> e
+        disegnate insieme. Ognuno ha il suo colore e i tratti compaiono sullo schermo dell'altro
+        mentre li fate.
       </p>
     </div>
   </section>
@@ -68,10 +69,13 @@
       </div>
 
       <div class="duo-shell">
+        <div class="duo-lessons-row">
+          <span class="duo-lessons-label">Cosa disegnate</span>
+          <div class="duo-lessons" id="duo-lessons" role="group" aria-label="Disegno da seguire"></div>
+        </div>
+
         <div class="canvas-wrap duo-canvas-wrap">
-          <canvas id="duo-board" width="1000" height="750" aria-label="Tela condivisa: disegna nella tua metà"></canvas>
-          <span class="side-badge side-badge-left" id="badge-left">Sinistra</span>
-          <span class="side-badge side-badge-right" id="badge-right">Destra</span>
+          <canvas id="duo-board" width="1000" height="750" aria-label="Tela condivisa: disegna insieme al tuo compagno"></canvas>
           <p class="duo-hint" id="duo-hint">Crea una stanza per disegnare</p>
         </div>
 
@@ -80,28 +84,30 @@
           <div class="tool-group" id="size-picker" role="group" aria-label="Spessore del tratto"></div>
           <div class="duo-tools-end">
             <button type="button" class="btn btn-ghost btn-sm" id="btn-undo-duo">Annulla</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-duo">Pulisci il mio lato</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-duo">Pulisci tutto</button>
           </div>
         </div>
 
+        <div class="duo-legend" id="duo-legend"></div>
+
         <p class="game-note">
-          Ogni giocatore può disegnare solo nella propria metà. I tratti viaggiano diretti tra i due
-          browser: nessun disegno viene salvato su un server.
+          La traccia azzurra è il disegno da seguire: potete completarlo insieme, ognuno con il suo
+          colore. I tratti viaggiano diretti tra i due browser: nessun disegno viene salvato su un server.
         </p>
       </div>
 
       <div class="duo-steps">
         <article>
           <h3>1. Crea la stanza</h3>
-          <p>Ti viene assegnato un codice di cinque caratteri e il lato sinistro della tela.</p>
+          <p>Ti viene assegnato un codice di cinque caratteri e un colore.</p>
         </article>
         <article>
           <h3>2. Manda il link</h3>
-          <p>“Copia link” mette negli appunti l'indirizzo con il codice: chi lo apre finisce subito nella stanza.</p>
+          <p>“Copia link” mette negli appunti l'indirizzo con il codice: chi lo apre entra subito sulla stessa tela.</p>
         </article>
         <article>
-          <h3>3. Disegnate</h3>
-          <p>Il compagno prende il lato destro. Vedete i rispettivi tratti in tempo reale, ognuno col suo colore.</p>
+          <h3>3. Disegnate insieme</h3>
+          <p>Vedete i rispettivi tratti e il puntino del compagno in tempo reale. Scegliete il disegno da seguire e completatelo.</p>
         </article>
       </div>
 
@@ -128,6 +134,7 @@
   </div>
 </footer>
 
+<script src="js/levels.js"></script>
 <script src="js/vendor/peerjs.min.js"></script>
 <script src="js/duo.js"></script>
 </body>
